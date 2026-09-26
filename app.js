@@ -40,7 +40,13 @@ app.get('/menu-items/:id', (req, res) => {
     const id = parseInt(req.params.id);
     const data = menu.find((m) => m.id === id);
 
-    if (!data) return res.status(404).json({ message: 'Data tidak ditemukan' });
+    if (!data) {
+        return res.status(404).json({
+            status: 'error',
+            message: 'Data tidak ditemukan',
+            data: null
+        });
+    }
     res.json(data);
 });
 
@@ -49,12 +55,20 @@ app.post('/menu-items', (req, res) => {
     const { nama, kategori, harga, tersedia, pedas } = req.body;
 
     if (!nama || !kategori || !harga || !tersedia || !pedas) {
-        return res.status(400).json({ message: 'Semua field wajib diisi' });
+        return res.status(400).json({
+            status: 'error',
+            message: 'Semua field wajib diisi',
+            data: null
+        });
     }
 
     const baru = { id: nextId++, nama, kategori, harga, tersedia, pedas };
     menu.push(baru);
-    res.status(201).json(baru);
+    res.status(201).json({
+        status: 'success',
+        message: 'Data menu berhasil ditambahkan',
+        data: baru
+    });
 });
 
 // PUT /menu-items/:id -> ubah data
@@ -63,11 +77,19 @@ app.put('/menu-items/:id', (req, res) => {
     const index = menu.findIndex((m) => m.id === id);
 
     if (index === -1) {
-        return res.status(404).json({ message: 'Data tidak ditemukan' });
+        return res.status(404).json({
+            status: 'error',
+            message: 'Data tidak ditemukan',
+            data: null
+        });
     }
 
     menu[index] = { ...menu[index], ...req.body, id };
-    res.json(menu[index]);
+    res.json({
+        status: 'success',
+        message: 'Data menu berhasil diperbarui',
+        data: menu[index]
+    });
 });
 
 // DELETE /menu-items/:id -> hapus data
@@ -76,11 +98,37 @@ app.delete('/menu-items/:id', (req, res) => {
     const index = menu.findIndex((m) => m.id === id);
 
     if (index === -1) {
-        return res.status(404).json({ message: 'Data tidak ditemukan' });
+        return res.status(404).json({
+            status: 'error',
+            message: 'Data tidak ditemukan',
+            data: null
+        });
     }
 
     menu.splice(index, 1);
-    res.status(204).send();
+    res.status(200).json({
+        status: 'success',
+        message: `Data menu dengan id ${id} berhasil dihapus`,
+        data: null
+    });
+});
+
+// Menyamakan format untuk route yang tidak ditemukan dan error middleware
+app.use((req, res) => {
+    res.status(404).json({
+        status: 'error',
+        message: 'Route tidak ditemukan',
+        data: null
+    });
+});
+
+app.use((err, req, res, next) => {
+    const statusCode = err.status || 500;
+    res.status(statusCode).json({
+        status: 'error',
+        message: statusCode === 500 ? 'Terjadi kesalahan pada server' : err.message,
+        data: null
+    });
 });
 
 app.listen(PORT, () => {
