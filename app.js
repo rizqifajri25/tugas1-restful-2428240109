@@ -6,74 +6,80 @@ const PORT = 3000;
 app.use(express.json());
 
 // Data sementara (disimpan di memori, hilang saat server restart)
-let mahasiswa = [
-    { id: 1, nama: 'Andi', jurusan: 'Sistem Informasi' },
-    { id: 2, nama: 'Budi', jurusan: 'Informatika' },
+let menu = [
+    { id: 1, nama: 'Es Teh Manis', kategori: 'Minuman', harga: "5000", tersedia: "true", pedas: "false" },
+    { id: 2, nama: 'Brown Sugar Boba', kategori: 'Minuman', harga: "10000", tersedia: "true", pedas: "false" },
+    { id: 3, nama: 'Croissant', kategori: 'Makanan', harga: "15000", tersedia: "false", pedas: "false" },
+    { id: 4, nama: 'Kentang Goreng', kategori: 'Makanan', harga: "10000", tersedia: "true", pedas: "false" },
+    { id: 5, nama: 'Mie Ayam Pedas', kategori: 'Makanan', harga: "15000", tersedia: "true", pedas: "true" }
 ];
-let nextId = 3;
+let nextId = 6;
 
 // GET / -> memastikan server berjalan
 app.get('/', (req, res) => {
     res.send('Server Express.js berjalan!');
 });
 
-// GET /mahasiswa -> seluruh data, bisa difilter: /mahasiswa?jurusan=Informatika
-app.get('/mahasiswa', (req, res) => {
-    const { jurusan } = req.query;
+// GET /menu-items -> seluruh data, bisa difilter: /menu-items?kategori=Minuman
+app.get('/menu-items', (req, res) => {
 
-    if (jurusan) {
-        const hasil = mahasiswa.filter((m) => m.jurusan === jurusan);
+    const { kategori } = req.query;
+    const { tersedia } = req.query;
+    const { pedas } = req.query;
+
+    if (kategori || tersedia || pedas) {
+        const hasil = menu.filter((m) => m.kategori === kategori || m.tersedia === tersedia || m.pedas === pedas);
         return res.json(hasil);
     }
 
-    res.json(mahasiswa);
+    res.json(menu);
 });
 
-// GET /mahasiswa/:id -> satu data berdasarkan id
-app.get('/mahasiswa/:id', (req, res) => {
+// GET /menu-items/:id -> satu data berdasarkan id
+app.get('/menu-items/:id', (req, res) => {
     const id = parseInt(req.params.id);
-    const data = mahasiswa.find((m) => m.id === id);
+    const data = menu.find((m) => m.id === id);
 
     if (!data) return res.status(404).json({ message: 'Data tidak ditemukan' });
     res.json(data);
 });
 
-// POST /mahasiswa -> tambah data baru
-app.post('/mahasiswa', (req, res) => {
-    const { nama, jurusan } = req.body;
+// POST /menu-items -> tambah data baru
+app.post('/menu-items', (req, res) => {
+    const { nama, kategori, harga, tersedia, pedas } = req.body;
 
-    if (!nama || !jurusan) {
-        return res.status(400).json({ message: 'nama dan jurusan wajib diisi' });
+    if (!nama || !kategori || !harga || !tersedia || !pedas) {
+        return res.status(400).json({ message: 'Semua field wajib diisi' });
     }
 
-    const baru = { id: nextId++, nama, jurusan };
-    mahasiswa.push(baru);
+    const baru = { id: nextId++, nama, kategori, harga, tersedia, pedas };
+    menu.push(baru);
     res.status(201).json(baru);
 });
 
-// PUT /mahasiswa/:id -> ubah data
-app.put('/mahasiswa/:id', (req, res) => {
+// PUT /menu-items/:id -> ubah data
+app.put('/menu-items/:id', (req, res) => {
     const id = parseInt(req.params.id);
-    const index = mahasiswa.findIndex((m) => m.id === id);
+    const index = menu.findIndex((m) => m.id === id);
 
     if (index === -1) {
         return res.status(404).json({ message: 'Data tidak ditemukan' });
     }
 
-    mahasiswa[index] = { ...mahasiswa[index], ...req.body, id };
-    res.json(mahasiswa[index]);
+    menu[index] = { ...menu[index], ...req.body, id };
+    res.json(menu[index]);
 });
 
-// DELETE /mahasiswa/:id -> hapus data
-app.delete('/mahasiswa/:id', (req, res) => {
+// DELETE /menu-items/:id -> hapus data
+app.delete('/menu-items/:id', (req, res) => {
     const id = parseInt(req.params.id);
-    const index = mahasiswa.findIndex((m) => m.id === id);
+    const index = menu.findIndex((m) => m.id === id);
 
     if (index === -1) {
         return res.status(404).json({ message: 'Data tidak ditemukan' });
     }
 
-    mahasiswa.splice(index, 1);
+    menu.splice(index, 1);
     res.status(204).send();
 });
 
