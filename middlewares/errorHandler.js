@@ -15,8 +15,25 @@ function errorHandler(err, req, res, next) {
         });
     }
 
+    if (err.name === 'ValidationError' || err.name === 'CastError') {
+        return res.status(400).json({
+            status: 'error',
+            message: err.message,
+            data: null
+        });
+    }
+
+    if (err.code === 11000) {
+        return res.status(409).json({
+            status: 'error',
+            message: 'Data dengan nilai unik tersebut sudah ada',
+            data: null
+        });
+    }
+
     const statusCode = err.status || 500;
 
+    if (statusCode === 500) console.error(err);
     res.status(statusCode).json({
         status: 'error',
         message: statusCode === 500 ? 'Terjadi kesalahan pada server' : err.message,
