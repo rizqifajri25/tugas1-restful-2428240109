@@ -89,7 +89,10 @@ exports.getAll = async (req, res) => {
 
     const fields = req.query.fields === undefined
         ? undefined
-        : String(req.query.fields).split(',').map((field) => field.trim()).filter(Boolean);
+        : String(req.query.fields).split(',').map((field) => field.trim());
+    if (fields && fields.some((field) => !field)) {
+        throw errorHttp(400, 'fields harus berisi nama field yang dipisahkan koma');
+    }
 
     const result = await menuItemsModel.getAll({
         kategori: req.query.kategori === undefined ? undefined : String(req.query.kategori),
@@ -101,7 +104,7 @@ exports.getAll = async (req, res) => {
     }, {
         page: angkaAman(req.query.page, 1, 1, Number.MAX_SAFE_INTEGER),
         limit: angkaAman(req.query.limit, 10, 1, 50),
-        sort: req.query.sort === undefined ? '-createdAt' : String(req.query.sort),
+        sort: req.query.sort === undefined ? 'id' : String(req.query.sort),
         fields,
     });
 

@@ -64,7 +64,7 @@ async function getAll(filters = {}, options = {}) {
 
     const page = options.page || 1;
     const limit = options.limit || 10;
-    const sort = options.sort || '-createdAt';
+    const sort = options.sort || 'id';
     const descending = sort.startsWith('-');
     const sortField = descending ? sort.slice(1) : sort;
 
@@ -133,7 +133,7 @@ async function update(id, data) {
     delete updates.id;
 
     return selectMenuFields(
-        MenuItem.findOneAndUpdate({ id }, updates, { new: true, runValidators: true })
+        MenuItem.findOneAndUpdate({ id }, updates, { returnDocument: 'after', runValidators: true })
     ).lean();
 }
 
